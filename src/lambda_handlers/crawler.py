@@ -1,9 +1,10 @@
+from daft_client.listing import Listing
 from daft_client.daft import Daft
 from daft_client.enums import SearchType, Distance, PropertyType
 from daft_client.location import Location
+from service.listing_service import ListingService
 
-BALLINTEER_DUBLIN = {'id': '2050', 'displayName': 'Ballinteer, Dublin', 'displayValue': 'ballinteer-dublin'}
-
+listing_service = ListingService()
 
 def lambda_handler(event, context):
     pass
@@ -14,7 +15,10 @@ def lambda_handler(event, context):
     daft.set_min_price(400000)
     daft.set_max_price(800000)
 
-    listings = daft.search()
-    for listing in listings:
-        print(listing.title)
-        print(listing.price)
+    #listings = daft.search()
+    # for listing in listings:
+    #     listing_service.saveNewListing(listing=listing)
+    l = Listing({'listing':{}})
+    l.shortcode = "113549630"
+    l.price = "475000"
+    listing_service.saveNewListing(l)

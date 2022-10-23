@@ -1,6 +1,8 @@
 from datetime import datetime
+from distutils.debug import DEBUG
 from urllib.parse import urljoin
 from math import radians, sin, cos, asin, sqrt
+from decimal import Decimal
 
 class Listing:
     _BASEURL = "http://www.daft.ie"
@@ -60,7 +62,7 @@ class Listing:
 
     @property
     def price(self):
-         return self._result["price"]
+        return self._result["price"]
 
     @property
     def bathrooms(self):
@@ -156,6 +158,28 @@ class Listing:
             mapping_dict["bathrooms"] = "1+ bath"
         mapping_dict["daft_link"] = self.daft_link
         return mapping_dict
+    
+    def as_dict_for_storage(self):
+        storage_dict = {}
+        try:
+            storage_dict["bedrooms"] = self.bedrooms
+        except:
+            storage_dict["bedrooms"] = "1+ bed"
+        try:
+            storage_dict["bathrooms"] = self.bathrooms
+        except:
+            storage_dict["bathrooms"] = "1+ bath"
+        storage_dict['ber'] = self.ber
+        storage_dict["daft_link"] = self.daft_link
+        storage_dict['surface'] = self.size_meters_squared
+        storage_dict['title'] = self.title
+        storage_dict['images'] = self.images
+        storage_dict['short_code'] = self.shortcode
+        storage_dict['price'] = Decimal(self.price[1:].replace(',','')) # remove the € prefix and thousands comma
+        storage_dict['category'] = self.category
+        storage_dict['publish_date'] = self.publish_date
+        return storage_dict
+
 
     def distance_to(self, location):
         """

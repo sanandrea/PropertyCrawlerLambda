@@ -17,13 +17,13 @@ class ListingService:
 
         if 'Item' in response_latest_version:
             logger.info(f'Listing {listing.shortcode} exists already checking if price has changed ...')
-            old_price = response_latest_version['Item']['price']['N']
+            old_price = response_latest_version['Item']['price']['S']
             if old_price == listing.price:
                 logger.info(f'Listing {listing.shortcode} price has not changed, skipping updates')
                 return
             
             logger.info(f'Listing {listing.shortcode} price has not changed, skipping updates')
-            latest_version = response_latest_version['Item']['Latest']['N']
+            latest_version = response_latest_version['Item']['latest']['N']
             higher_version = int(latest_version) + 1
             self.listingDao.update_existing_item(listing, latest_version, higher_version)
         else:

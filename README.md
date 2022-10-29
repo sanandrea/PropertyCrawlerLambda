@@ -1,6 +1,9 @@
 # Property Crawler
 This project contains the business logic of the Lambda functions that Property Crawler has.
 
+The crawler does a search in a predefined area of Ireland. The search result is then stored in an AWS DDB table.
+The table has enabled versioning so price changes are recorded with historical values.
+
 ## High Level
 
 This package contains only the source python code for the lambda functions.

@@ -48,6 +48,7 @@ class ListingDao:
 
         low_level_copy[PK_NAME] = {'S': VENDOR_PREFIX + listing.shortcode}
         low_level_copy[SK_NAME] = {'S': METADATA_SK}
+        low_level_copy['addedTime'] = {'S': current_time}
 
         ddb_client.transact_write_items(
             TransactItems = [

@@ -21,6 +21,15 @@ python setup.py ldist
 
 The dependencies of the projects need to declared in the setup.py file in order to be included in the lambda zip.
 
+
+### Scripts
+To run scripts on the items:
+1. Create an executable file on the scripts folder (`test.py`).
+2. Modify the `setup.py` to include the script in the relative attribute
+3. Install the scripts: `python setup.py install`
+4. Run the script: *`test.py`*
+
+
 ### TODO 
 1. Add alarms in CDK
 2. Improve filtering of properties

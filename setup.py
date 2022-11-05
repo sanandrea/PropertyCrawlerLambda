@@ -12,7 +12,7 @@ install_requires = [t.strip() for t in tests_require]
 setuptools.setup(
     name="property-crawler",
     version="0.0.1",
-    scripts=['scripts/backfill.py'],
+    scripts=['scripts/backfill.py', 'scripts/test.py'],
     setup_requires=['lambda_setuptools'], # this config entry does the lambda packaging
     install_requires=install_requires,
     

@@ -7,10 +7,8 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table('PropertiesList')
 
 response = table.scan(
-    ProjectionExpression='#k,#s',
-    FilterExpression="#s <> :sk_f",
+    FilterExpression="#s = :sk_f",
     ExpressionAttributeNames={
-        '#k' : PK_NAME, #partition key
         '#s' : SK_NAME #sort key
     },
     ExpressionAttributeValues={
@@ -19,14 +17,13 @@ response = table.scan(
 )
 
 items = response['Items']
+print(response)
 
 while 'LastEvaluatedKey' in response:
     response = table.scan(
         ExclusiveStartKey=response['LastEvaluatedKey'],
-        ProjectionExpression='#k,#s',
         FilterExpression="#s = :sk_f",
         ExpressionAttributeNames={
-            '#k' : PK_NAME, #partition key
             '#s' : SK_NAME #sort key
         },
         ExpressionAttributeValues={
@@ -38,13 +35,24 @@ while 'LastEvaluatedKey' in response:
 print(f'Collected {len(items)} items')
 
 for item in items:
+    print(item)
+    current_dl = item['daft_link']
+    tokens = current_dl.split('/')
+    new_tokens = ['https:'] + tokens[1:]
+    new_dl = '/'.join(new_tokens)
     response = table.update_item(
-        Key=item,
-        UpdateExpression='SET #s = :status',
+        Key={
+            'pr_id':item[PK_NAME],
+            'sk':item[SK_NAME]
+        },
+        UpdateExpression='SET #s = :status, #dl = :dl_v REMOVE #it',
         ExpressionAttributeNames={
-            '#s' : 'propertyStatus'
+            '#s' : 'propertyStatus',
+            '#dl': 'daft_link',
+            '#it': 'inactiveTime'
         },
         ExpressionAttributeValues={
-            ':status' : PropertyStatus.ACTIVE.value
+            ':status' : PropertyStatus.ACTIVE.value,
+            ':dl_v': new_dl
         }
     )

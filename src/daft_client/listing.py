@@ -5,7 +5,7 @@ from math import radians, sin, cos, asin, sqrt
 from decimal import Decimal
 
 class Listing:
-    _BASEURL = "http://www.daft.ie"
+    _BASEURL = "https://www.daft.ie"
 
     def __init__(self, result: dict):
         self._result = result["listing"]
@@ -32,7 +32,10 @@ class Listing:
 
     @property
     def daft_link(self):
-        return urljoin(self._BASEURL, self._result["seoFriendlyPath"])
+        if "seoFriendlyPath" in self._result:
+            return urljoin(self._BASEURL, self._result["seoFriendlyPath"])
+        else:
+            return self._result["daft_link"]
 
     @property
     def latitude(self):
@@ -79,7 +82,10 @@ class Listing:
 
     @property
     def shortcode(self):
-        return self._result["daftShortcode"]
+        if "daftShortcode" in self._result:
+            return self._result["daftShortcode"]
+        else:
+            return self._result["short_code"]
 
     @property
     def sections(self):

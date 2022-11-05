@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
-from typing import Dict
+from typing import Dict, List
+from model.model_constants import VENDOR_PREFIX
 from model.model_constants import PropertyStatus
 from daft_client.listing import Listing
 import boto3
@@ -23,15 +24,18 @@ serializer = TypeSerializer()
 PK_NAME = 'pr_id'
 SK_NAME = 'sk'
 
-VENDOR_PREFIX = 'DAFT_'
-
 LATEST_VERSION_SK = 'v0'
 FIRST_VERSION_SK = 'v1'
 METADATA_SK = 'metadata'
+PROPERTY_STATUS = 'propertyStatus'
+ADDED_TIME_FIELD = 'addedTime'
+INACTIVE_TIME_FIELD = 'inactiveTime'
 
 class ListingDao:
     def __init__(self) -> None:
         self.tableName = os.environ['CRAWLER_TABLE_NAME']
+        ddb_resource = boto3.resource('dynamodb')
+        self.table = ddb_resource.Table(self.tableName)
     
     def getLatestItem(self, propertyId) -> Dict:
         return ddb_client.get_item(
@@ -49,8 +53,8 @@ class ListingDao:
 
         low_level_copy[PK_NAME] = {'S': VENDOR_PREFIX + listing.shortcode}
         low_level_copy[SK_NAME] = {'S': METADATA_SK}
-        low_level_copy['addedTime'] = {'S': current_time}
-        low_level_copy['propertyStatus'] = {'S': PropertyStatus.ACTIVE.value}
+        low_level_copy[ADDED_TIME_FIELD] = {'S': current_time}
+        low_level_copy[PROPERTY_STATUS] = {'S': PropertyStatus.ACTIVE.value}
 
         ddb_client.transact_write_items(
             TransactItems = [
@@ -150,4 +154,46 @@ class ListingDao:
             ]
         )
 
+    def get_all_by_status(self, property_status: PropertyStatus) -> List[Listing]:
+        response = self.table.scan(
+            FilterExpression="#ps = :ps_v",
+            ExpressionAttributeNames={
+                '#ps' : PROPERTY_STATUS
+            },
+            ExpressionAttributeValues={
+                ':ps_v' : property_status.value
+            }
+        )
 
+        items = response['Items']
+
+        while 'LastEvaluatedKey' in response:
+            response = self.table.scan(
+                ExclusiveStartKey=response['LastEvaluatedKey'],
+                FilterExpression="#ps = :ps_v",
+                ExpressionAttributeNames={
+                    '#ps' : PROPERTY_STATUS
+                },
+                ExpressionAttributeValues={
+                    ':ps_v' : property_status.value
+                }
+            )
+            items.extend(response['Items'])
+        return [Listing({'listing': item}) for item in items]
+
+    def update_property_status(self, listing: Listing, property_status: PropertyStatus):
+        return self.table.update_item(
+            Key={
+                PK_NAME: VENDOR_PREFIX + listing.shortcode,
+                SK_NAME: METADATA_SK 
+            },
+            UpdateExpression="SET #ps = :ps_v, #dt = :dt_v",
+            ExpressionAttributeNames={
+                '#ps': PROPERTY_STATUS,
+                '#dt': INACTIVE_TIME_FIELD
+            },
+            ExpressionAttributeValues={
+                ':ps_v': property_status.value,
+                ':dt_v': datetime.utcnow().isoformat(timespec="seconds")
+            },
+        )

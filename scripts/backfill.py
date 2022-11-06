@@ -1,6 +1,6 @@
 import boto3
-from dao.listing_dao import PK_NAME, SK_NAME, METADATA_SK
-from model.model_constants import PropertyStatus
+from dpcie.dao.listing_dao import PK_NAME, SK_NAME, METADATA_SK
+from dpcie.model.model_constants import PropertyStatus
 
 dynamodb = boto3.resource('dynamodb')
 

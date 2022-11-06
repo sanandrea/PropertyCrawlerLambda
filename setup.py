@@ -22,8 +22,8 @@ setuptools.setup(
 
     author="Andi Palo",
 
-    package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
+    package_dir={},
+    packages=setuptools.find_packages(where="."),
 
     python_requires=">=3.8"
 )

@@ -1,13 +1,14 @@
-from datetime import datetime
 import os
+from datetime import datetime
 from typing import Dict, List
-from model.model_constants import VENDOR_PREFIX
-from model.model_constants import PropertyStatus
-from daft_client.listing import Listing
 import boto3
 from boto3.dynamodb.types import TypeSerializer
 from botocore.client import Config
 from aws_lambda_powertools import Logger
+
+from dpcie.model.model_constants import VENDOR_PREFIX
+from dpcie.model.model_constants import PropertyStatus
+from dpcie.daft_client.listing import Listing
 
 logger = Logger()
 

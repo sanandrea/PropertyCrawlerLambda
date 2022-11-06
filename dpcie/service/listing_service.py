@@ -1,14 +1,14 @@
+from typing import List
 import os
 import boto3
 import botocore
 import requests
 from http import HTTPStatus
-
-from typing import List
-from daft_client.listing import Listing
-from dao.listing_dao import ListingDao
 from aws_lambda_powertools import Logger
-from model.model_constants import PropertyStatus, VENDOR_PREFIX
+
+from dpcie.daft_client.listing import Listing
+from dpcie.dao.listing_dao import ListingDao
+from dpcie.model.model_constants import PropertyStatus, VENDOR_PREFIX
 logger = Logger()
 
 PAGE_HTML = 'page.html'

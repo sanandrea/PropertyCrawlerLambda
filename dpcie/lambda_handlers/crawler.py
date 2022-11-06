@@ -1,12 +1,12 @@
-from daft_client.enums import Ber
-from daft_client.daft import Daft
-from daft_client.enums import SearchType, Distance, PropertyType
-from daft_client.location import Location
-from service.listing_service import ListingService
+from dpcie.daft_client.enums import Ber
+from dpcie.daft_client.daft import Daft
+from dpcie.daft_client.enums import SearchType, Distance, PropertyType
+from dpcie.daft_client.location import Location
+from dpcie.service.listing_service import ListingService
 
 listing_service = ListingService()
 
-def lambda_handler(event, context):
+def crawler_handler(event, context):
     pass
     daft = Daft()
     daft.set_location(Location.DUBLIN_16_DUBLIN, Distance.KM1)

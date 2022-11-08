@@ -30,8 +30,26 @@ To run scripts on the items:
 4. Run the script: *`test.py`*
 
 
+### Unit tests
+
+Some unit tests depend on dynamodb local. You can download and unzip the local dynamodb from [aws docs](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html)
+
+After the zip in unpacked run the following Java command in the folder:
+
+```
+java -Djava.library.path=./DynamoDBLocal_lib -jar DynamoDBLocal.jar -sharedDb
+```
+
+
+To run unit tests
+```
+python setup.py install
+pytest
+```
+
+
+
 ### TODO 
-1. Add alarms in CDK
 2. Improve filtering of properties
 3. Add GSI for better filtering
 

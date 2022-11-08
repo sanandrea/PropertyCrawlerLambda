@@ -65,7 +65,8 @@ class Listing:
 
     @property
     def price(self):
-        return self._result["price"]
+        price_str = self._result["price"]
+        return price_str[1:].replace(',','') # remove the € prefix and thousands comma
 
     @property
     def bathrooms(self):
@@ -181,7 +182,7 @@ class Listing:
         storage_dict['title'] = self.title
         storage_dict['images'] = self.images
         storage_dict['short_code'] = self.shortcode
-        storage_dict['price'] = Decimal(self.price[1:].replace(',','')) # remove the € prefix and thousands comma
+        storage_dict['price'] = self.price
         storage_dict['category'] = self.category
         storage_dict['publish_date'] = self.publish_date
         return storage_dict

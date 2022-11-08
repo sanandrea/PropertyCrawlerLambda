@@ -1,0 +1,58 @@
+{
+    "KeySchema": [
+      { "AttributeName": "pr_id", "KeyType": "HASH" },
+      { "AttributeName": "sk", "KeyType": "RANGE" }
+    ],
+    "AttributeDefinitions": [
+      { "AttributeName": "pr_id", "AttributeType": "S" },
+      { "AttributeName": "sk", "AttributeType": "S" },
+      { "AttributeName": "title", "AttributeType": "S" },
+      { "AttributeName": "addedTime", "AttributeType": "S" }
+    ],
+    "ProvisionedThroughput": {
+        "ReadCapacityUnits": 1000,
+        "WriteCapacityUnits": 1000
+    },
+    "GlobalSecondaryIndexes": [
+        {
+            "IndexName": "titleIndex",
+            "KeySchema": [
+              {
+                "AttributeName": "title",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "addedTime",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+                "ReadCapacityUnits": 1000,
+                "WriteCapacityUnits": 1000
+            }
+        },
+        {
+            "IndexName": "timeAdded",
+            "KeySchema": [
+              {
+                "AttributeName": "sk",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "addedTime",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+                "ReadCapacityUnits": 1000,
+                "WriteCapacityUnits": 1000
+            }
+        }
+    ]
+}

@@ -33,9 +33,14 @@ ADDED_TIME_FIELD = 'addedTime'
 INACTIVE_TIME_FIELD = 'inactiveTime'
 
 class ListingDao:
-    def __init__(self) -> None:
+    @staticmethod
+    def get_pk_for_listing(listing: Listing):
+        return VENDOR_PREFIX + listing.shortcode
+    
+    def __init__(self, ddb_resource = None) -> None:
         self.tableName = os.environ['CRAWLER_TABLE_NAME']
-        ddb_resource = boto3.resource('dynamodb')
+        if not ddb_resource:
+            ddb_resource = boto3.resource('dynamodb')
         self.table = ddb_resource.Table(self.tableName)
     
     def getLatestItem(self, propertyId) -> Dict:

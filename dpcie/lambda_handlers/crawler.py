@@ -4,10 +4,7 @@ from dpcie.daft_client.enums import SearchType, Distance, PropertyType
 from dpcie.daft_client.location import Location
 from dpcie.service.listing_service import ListingService
 
-listing_service = ListingService()
-
 def crawler_handler(event, context):
-    pass
     daft = Daft()
     daft.set_location(Location.DUBLIN_16_DUBLIN, Distance.KM1)
     daft.set_search_type(SearchType.RESIDENTIAL_SALE)
@@ -18,6 +15,8 @@ def crawler_handler(event, context):
     daft.set_max_ber(Ber.D1)
     daft.set_min_price(500000)
     daft.set_max_price(900000)
+
+    listing_service = ListingService()
 
     listings = daft.search()
     for listing in listings:

@@ -34,9 +34,8 @@ class ListingService:
             logger.info(f'Listing {listing.shortcode} price has not changed, skipping updates')
             latest_version = response_latest_version['Item']['latest']['N']
             higher_version = int(latest_version) + 1
-            self.listingDao.update_existing_item(listing, latest_version, higher_version)
-        else:
-            self.listingDao.insert_new_item(listing)
+
+        self.listingDao.upsert_item_atomically(listing, latest_version, higher_version)
 
     def check_status_of_active_listings(self) -> List[Listing]:
         s3 = boto3.resource('s3')

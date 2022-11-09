@@ -34,16 +34,19 @@ INACTIVE_TIME_FIELD = 'inactiveTime'
 
 class ListingDao:
     @staticmethod
-    def get_pk_for_listing(listing: Listing):
+    def get_pk_for_listing(listing: Listing
+):
         return VENDOR_PREFIX + listing.shortcode
     
-    def __init__(self, ddb_resource = None) -> None:
+    def __init__(self, ddb_resource = None
+) -> None:
         self.tableName = os.environ['CRAWLER_TABLE_NAME']
         if not ddb_resource:
             ddb_resource = boto3.resource('dynamodb')
         self.table = ddb_resource.Table(self.tableName)
     
-    def getLatestItem(self, propertyId) -> Dict:
+    def getLatestItem(self, propertyId
+) -> Dict:
         return ddb_client.get_item(
             TableName = self.tableName,
             Key = {
@@ -51,64 +54,55 @@ class ListingDao:
                 SK_NAME: {'S': LATEST_VERSION_SK}
             }
         )
-    
-    def insert_new_item(self, listing: Listing):
-        current_time = datetime.utcnow().isoformat(timespec="seconds")
-        metadata_dict = listing.as_dict_for_storage()
-        low_level_copy = {k: serializer.serialize(v) for k,v in metadata_dict.items()}
 
-        low_level_copy[PK_NAME] = {'S': VENDOR_PREFIX + listing.shortcode}
-        low_level_copy[SK_NAME] = {'S': METADATA_SK}
-        low_level_copy[ADDED_TIME_FIELD] = {'S': current_time}
-        low_level_copy[PROPERTY_STATUS] = {'S': PropertyStatus.ACTIVE.value}
 
-        ddb_client.transact_write_items(
-            TransactItems = [
-                {
-                    'Put': {
-                        'TableName': self.tableName,
-                        'Item': low_level_copy
-                    }
-                },
-                {
-                    'Put': {
-                        'TableName': self.tableName,
-                        'Item': {
-                            PK_NAME: {'S': VENDOR_PREFIX + listing.shortcode},
-                            SK_NAME: {'S': LATEST_VERSION_SK},
-                            'updateTime': {'S': current_time},
-                            'price': {'S': listing.price},
-                            'latest': {'N': '1'}
-                        }
-                    }
-                },
-                {
-                    'Put': {
-                        'TableName': self.tableName,
-                        'Item': {
-                            PK_NAME: {'S': VENDOR_PREFIX + listing.shortcode},
-                            SK_NAME: {'S': FIRST_VERSION_SK},
-                            'updateTime': {'S': current_time},
-                            'price': {'S': listing.price}
-                        }
-                    }
-                }
-            ]
-        )
-    
-    def update_existing_item(self, listing: Listing, 
+    def upsert_item_atomically(self, listing: Listing, 
     latest_version: int, 
     higher_version: int
 ) -> None:
         current_time = datetime.utcnow().isoformat(timespec="seconds")
+        pk = ListingDao.get_pk_for_listing(listing)
         # See https://aws.amazon.com/blogs/database/implementing-version-control-using-amazon-dynamodb/
+
+        if latest_version == 0:
+            metadata_dict = listing.as_dict_for_storage()
+            low_level_copy = {k: serializer.serialize(v) for k,v in metadata_dict.items()}
+
+            low_level_copy[PK_NAME] = {'S': pk}
+            low_level_copy[SK_NAME] = {'S': METADATA_SK}
+            low_level_copy[ADDED_TIME_FIELD] = {'S': current_time}
+            low_level_copy[PROPERTY_STATUS] = {'S': PropertyStatus.ACTIVE.value}
+            metadata_item = {
+                'Put': {
+                    'TableName': self.tableName,
+                    'Item': low_level_copy
+                }
+            }
+        else:
+            metadata_item = {
+                'Update': {
+                    'TableName': self.tableName,
+                    'Key': {
+                        PK_NAME: {'S': pk},
+                        SK_NAME: {'S': METADATA_SK}
+                    },
+                    'UpdateExpression': 'SET #price = :price',
+                    'ExpressionAttributeNames': {
+                        '#price': 'price'
+                    },
+                    'ExpressionAttributeValues': {
+                        ':price': {'S': listing.price}
+                    }
+                }
+            }
+
         ddb_client.transact_write_items(
             TransactItems = [
                 {
                     'Update': {
                         'TableName': self.tableName,
                         'Key': {
-                            PK_NAME: {'S': VENDOR_PREFIX + listing.shortcode},
+                            PK_NAME: {'S': pk},
                             SK_NAME: {'S': LATEST_VERSION_SK}
                         },
                         # Conditional write makes the update idempotent here 
@@ -134,33 +128,19 @@ class ListingDao:
                     'Put': {
                         'TableName': self.tableName,
                         'Item': {
-                            PK_NAME: {'S': VENDOR_PREFIX + listing.shortcode},
+                            PK_NAME: {'S': pk},
                             SK_NAME: {'S': 'v' + str(higher_version)},
                             'updateTime': {'S': current_time},
                             'price': {'S': listing.price}
                         }
                     }
                 },
-                {
-                    'Update': {
-                        'TableName': self.tableName,
-                        'Key': {
-                            PK_NAME: {'S': VENDOR_PREFIX + listing.shortcode},
-                            SK_NAME: {'S': METADATA_SK}
-                        },
-                        'UpdateExpression': 'SET #price = :price',
-                        'ExpressionAttributeNames': {
-                            '#price': 'price'
-                        },
-                        'ExpressionAttributeValues': {
-                            ':price': {'S': listing.price}
-                        }
-                    }
-                }
+                metadata_item
             ]
         )
 
-    def get_all_by_status(self, property_status: PropertyStatus) -> List[Listing]:
+    def get_all_by_status(self, property_status: PropertyStatus
+) -> List[Listing]:
         response = self.table.scan(
             FilterExpression="#ps = :ps_v",
             ExpressionAttributeNames={
@@ -187,7 +167,8 @@ class ListingDao:
             items.extend(response['Items'])
         return [Listing({'listing': item}) for item in items]
 
-    def update_property_status(self, listing: Listing, property_status: PropertyStatus):
+    def update_property_status(self, listing: Listing, property_status: PropertyStatus
+):
         return self.table.update_item(
             Key={
                 PK_NAME: VENDOR_PREFIX + listing.shortcode,

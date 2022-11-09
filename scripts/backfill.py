@@ -17,7 +17,6 @@ response = table.scan(
 )
 
 items = response['Items']
-print(response)
 
 while 'LastEvaluatedKey' in response:
     response = table.scan(
@@ -35,24 +34,17 @@ while 'LastEvaluatedKey' in response:
 print(f'Collected {len(items)} items')
 
 for item in items:
-    print(item)
-    current_dl = item['daft_link']
-    tokens = current_dl.split('/')
-    new_tokens = ['https:'] + tokens[1:]
-    new_dl = '/'.join(new_tokens)
+    new_added_time = item['publish_date'].replace(' ', 'T')
     response = table.update_item(
         Key={
             'pr_id':item[PK_NAME],
             'sk':item[SK_NAME]
         },
-        UpdateExpression='SET #s = :status, #dl = :dl_v REMOVE #it',
+        UpdateExpression='SET #at = :at_v',
         ExpressionAttributeNames={
-            '#s' : 'propertyStatus',
-            '#dl': 'daft_link',
-            '#it': 'inactiveTime'
+            '#at' : 'addedTime'
         },
         ExpressionAttributeValues={
-            ':status' : PropertyStatus.ACTIVE.value,
-            ':dl_v': new_dl
+            ':at_v': new_added_time
         }
     )

@@ -1,3 +1,4 @@
+from collections import defaultdict
 import re
 import requests
 from typing import Union, Optional, List, Dict
@@ -27,7 +28,7 @@ class Daft:
         self._ranges = list()
         self._geoFilter = dict()
         self._sort_filter = dict()
-        self._paging = self._PAGE_0
+        self._paging = deepcopy(self._PAGE_0)
         self._total_results = 0
 
     @property
@@ -85,6 +86,10 @@ class Daft:
             return
         self._geoFilter = {"storedShapeIds": [id],
                            "geoSearchType": "STORED_SHAPES"}
+
+    def reset_search(self):
+        self._geoFilter = dict()
+        self._paging = deepcopy(self._PAGE_0)
 
     def set_search_type(self, search_type: SearchType):
         if not isinstance(search_type, SearchType):
@@ -241,7 +246,7 @@ class Daft:
             payload["geoFilter"] = self._geoFilter
         if self._sort_filter:
             payload["sort"] = self._sort_filter
-        payload["paging"] = self._paging
+        payload["paging"] = deepcopy(self._paging)
         return payload
 
     def search(self, max_pages: Optional[int] = None) -> List[Listing]:

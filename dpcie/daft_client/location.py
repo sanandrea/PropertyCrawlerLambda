@@ -2,6 +2,7 @@ import enum
 
 class Location(enum.Enum):
     BALLINTEER_DUBLIN = {'id': '2050', 'displayName': 'Ballinteer, Dublin', 'displayValue': 'ballinteer-dublin'}
+    LEOPARDSTOWN_DUBLIN = {'id': '2161', 'displayName': 'Leopardstown, Dublin', 'displayValue': 'leopardstown-dublin'}
     DUBLIN_1_DUBLIN = {'id': '65', 'displayName': 'Dublin 1, Dublin', 'displayValue': 'dublin-1-dublin'}
     DUBLIN_10_DUBLIN = {'id': '75', 'displayName': 'Dublin 10, Dublin', 'displayValue': 'dublin-10-dublin'}
     DUBLIN_11_DUBLIN = {'id': '76', 'displayName': 'Dublin 11, Dublin', 'displayValue': 'dublin-11-dublin'}
